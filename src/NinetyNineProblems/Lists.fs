@@ -237,6 +237,45 @@ module Lists =
             | [] -> []
             | x :: rest -> (extract (k - 1) rest |> List.map (fun r -> x :: r)) @ extract k rest
 
+    let group list sizes =
+        (*
+            This a ported solution of the probelm author.
+            Tbf I didn't really understand what this function should even do
+        *)
+
+        let initial = List.map (fun size -> size, []) sizes
+
+        let prepend p list =
+            let emit l acc = l :: acc
+
+            let rec aux emit acc =
+                function
+                | [] -> emit [] acc
+                | (n, l) as h :: t ->
+                    let acc = if n > 0 then emit ((n - 1, p :: l) :: t) acc else acc
+                    aux (fun l acc -> emit (h :: l) acc) acc t
+
+            aux emit [] list
+
+        let concatMap f l = List.concat (List.map f l)
+
+        let rec aux =
+            function
+            | [] -> [ initial ]
+            | h :: t -> concatMap (prepend h) (aux t)
+
+        let all = aux list
+
+        let rec forAll f =
+            function
+            | [] -> true
+            | x :: _ when not (f x) -> false
+            | _ :: t -> forAll f t
+
+        let complete = List.filter (forAll (fun (x, _) -> x = 0)) all
+
+        List.map (List.map snd) complete
+
     let rec insert key item =
         function
         | [] -> [ item ]

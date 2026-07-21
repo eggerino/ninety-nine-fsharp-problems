@@ -245,7 +245,23 @@ let ``Problem 26`` () =
 
 [<Fact>]
 let ``Problem 27`` () =
-    Assert.Fail "Help. Wtf is this problem :("
+    let actual = group [ "a"; "b"; "c"; "d" ] [ 2; 1 ]
+
+    let expected =
+        [ [ [ "a"; "b" ]; [ "c" ] ]
+          [ [ "a"; "c" ]; [ "b" ] ]
+          [ [ "b"; "c" ]; [ "a" ] ]
+          [ [ "a"; "b" ]; [ "d" ] ]
+          [ [ "a"; "c" ]; [ "d" ] ]
+          [ [ "b"; "c" ]; [ "d" ] ]
+          [ [ "a"; "d" ]; [ "b" ] ]
+          [ [ "b"; "d" ]; [ "a" ] ]
+          [ [ "a"; "d" ]; [ "c" ] ]
+          [ [ "b"; "d" ]; [ "c" ] ]
+          [ [ "c"; "d" ]; [ "a" ] ]
+          [ [ "c"; "d" ]; [ "b" ] ] ]
+
+    assertEqualStr expected actual
 
 [<Fact>]
 let ``Problem 28`` () =
