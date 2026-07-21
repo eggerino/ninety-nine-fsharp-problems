@@ -9,6 +9,7 @@
   <ItemGroup>
     <Compile Include="lists.fs" />
     <Compile Include="arithmetic.fs" />
+    <Compile Include="logic.fs" />
   </ItemGroup>
 
 </Project>
