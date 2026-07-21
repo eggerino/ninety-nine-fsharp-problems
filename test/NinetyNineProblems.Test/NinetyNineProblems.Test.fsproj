@@ -8,6 +8,7 @@
   <ItemGroup>
     <Compile Include="Lists.Test.fs" />
     <Compile Include="Arithmetic.Test.fs" />
+    <Compile Include="Logic.Test.fs" />
   </ItemGroup>
 
   <ItemGroup>
