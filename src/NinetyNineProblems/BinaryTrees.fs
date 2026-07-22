@@ -209,6 +209,16 @@ module BinaryTrees =
     let move dx dy =
         map (fun (item, x, y) -> item, x + dx, y + dy)
 
+    let moveX dx = move dx 0
+
+    let rec getAnchor =
+        function
+        | Empty -> 0
+        | Node((_, x, _), Empty, _) -> x
+        | Node(_, l, _) -> getAnchor l
+
+    let moveOrigin tree = moveX (1 - getAnchor tree) tree
+
     let addHeights tree =
         let rec aux h =
             function
@@ -245,17 +255,126 @@ module BinaryTrees =
             | Empty -> Empty
             | Node((item, h), l, r) ->
                 let dist = pown 2 (height - h - 1)
-                let l = buildCentered l |> move -dist 0
-                let r = buildCentered r |> move dist 0
+                let l = buildCentered l |> moveX -dist
+                let r = buildCentered r |> moveX dist
 
                 Node((item, 0, h), l, r)
 
         let centered = buildCentered tree
 
-        let rec getLeftX =
-            function
-            | Empty -> 0
-            | Node((_, x, _), Empty, _) -> x
-            | Node(_, l, _) -> getLeftX l
+        moveOrigin centered
 
-        move (1 - getLeftX centered) 0 centered
+    let layoutBinaryTree3 tree =
+        let tree = addHeights tree
+
+        let rec pathDistance p1 p2 =
+            match p1, p2 with
+            | h1 :: t1, h2 :: t2 -> max (h1 - h2) (pathDistance t1 t2)
+            | _ -> 0
+
+        let rec mergePaths main side =
+            match main, side with
+            | [], _ -> side
+            | _, [] -> main
+            | h :: mt, _ :: st -> h :: mergePaths mt st
+
+        let add a b = a + b
+        let movePath dx = List.map (add dx)
+
+        let rec build =
+            function
+            | Empty -> Empty, [], []
+            | Node((item, height), left, right) ->
+                let left, leftsLeftPath, leftsRightPath = build left
+                let right, rightsLeftPath, rightsRightPath = build right
+
+                let distance = 1 + pathDistance leftsRightPath rightsLeftPath / 2
+
+                let left = moveX -distance left
+                let leftsLeftPath = movePath -distance leftsLeftPath
+                let leftsRightPath = movePath -distance leftsRightPath
+
+                let right = moveX distance right
+                let rightsLeftPath = movePath distance rightsLeftPath
+                let rightsRightPath = movePath distance rightsRightPath
+
+                let leftPath = 0 :: mergePaths leftsLeftPath rightsLeftPath
+                let rightPath = 0 :: mergePaths rightsRightPath leftsRightPath
+
+                Node((item, 0, height), left, right), leftPath, rightPath
+
+        let centered, _, _ = build tree
+        moveOrigin centered
+
+    let rec stringOfTree =
+        function
+        | Empty -> ""
+        | Node(x, Empty, Empty) -> $"{x}"
+        | Node(x, l, r) -> $"{x}({stringOfTree l},{stringOfTree r})"
+
+    let treeOfString (str: string) =
+        let rec parse ptr =
+            if ptr >= str.Length || str[ptr] = ',' || str[ptr] = ')' then
+                Empty, ptr
+            else
+                let value = str[ptr]
+
+                if str[ptr + 1] <> '(' then
+                    Node(value, Empty, Empty), ptr + 1
+                else
+                    let left, ptr = parse (ptr + 2) // Consume value and (
+                    let right, ptr = parse (ptr + 1) // Consume ,
+                    Node(value, left, right), ptr + 1 // Consume )
+
+        fst (parse 0)
+
+    let rec preorder =
+        function
+        | Empty -> []
+        | Node(x, l, r) -> x :: preorder l @ preorder r
+
+    let rec inorder =
+        function
+        | Empty -> []
+        | Node(x, l, r) -> inorder l @ x :: inorder r
+
+    let splitAtValue value list =
+        let rec aux acc =
+            function
+            | [] -> List.rev acc, []
+            | h :: t when h = value -> List.rev acc, t
+            | h :: t -> aux (h :: acc) t
+
+        aux [] list
+
+    let preInTree pre in_ =
+        let rec aux pre in_ =
+            match pre, in_ with
+            | _, []
+            | [], _ -> Empty, pre
+            | item :: preTail, _ ->
+                let leftIn, rightIn = splitAtValue item in_
+                let left, pre = aux preTail leftIn
+                let right, pre = aux pre rightIn
+                Node(item, left, right), pre
+
+        fst (aux pre in_)
+
+    let rec dotstringOfTree =
+        function
+        | Empty -> "."
+        | Node(x, l, r) -> $"{x}" + dotstringOfTree l + dotstringOfTree r
+
+    let treeOfDotstring (str: string) =
+        let rec parse ptr =
+            if ptr >= str.Length then
+                Empty, ptr
+            else
+                match str[ptr] with
+                | '.' -> Empty, ptr + 1
+                | value ->
+                    let left, ptr = parse (ptr + 1)
+                    let right, ptr = parse ptr
+                    Node(value, left, right), ptr
+
+        fst (parse 0)

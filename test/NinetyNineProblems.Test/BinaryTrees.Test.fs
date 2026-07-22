@@ -4,6 +4,8 @@ open NinetyNineProblems.BinaryTrees
 open Xunit
 open ListTests
 
+let leaf x = Node(x, Empty, Empty)
+
 [<Fact>]
 let ``Problem 44`` () =
     let actual = cbalTree 4
@@ -142,8 +144,6 @@ let ``Problem 54`` () =
 [<Fact>]
 let ``Problem 55`` () =
     let exampleLayoutTree =
-        let leaf x = Node(x, Empty, Empty)
-
         Node(
             'n',
             Node('k', Node('c', leaf 'a', Node('h', Node('g', leaf 'e', Empty), Empty)), leaf 'm'),
@@ -176,8 +176,6 @@ let ``Problem 55`` () =
 [<Fact>]
 let ``Problem 56`` () =
     let exampleLayoutTree =
-        let leaf x = Node(x, Empty, Empty)
-
         Node(
             'n',
             Node('k', Node('c', leaf 'a', Node('e', leaf 'd', leaf 'g')), leaf 'm'),
@@ -201,4 +199,82 @@ let ``Problem 56`` () =
             Node(('u', 23, 2), Node(('p', 19, 3), Empty, Node(('q', 21, 4), Empty, Empty)), Empty)
         )
 
+    assertEqualStr expected actual
+
+[<Fact>]
+let ``Problem 57`` () =
+    let exampleLayoutTree =
+        Node(
+            'n',
+            Node('k', Node('c', leaf 'a', Node('h', Node('g', leaf 'e', Empty), Empty)), leaf 'm'),
+            Node('u', Node('p', Empty, Node('s', leaf 'q', Empty)), Empty)
+        )
+
+    let actual = layoutBinaryTree3 exampleLayoutTree
+
+    let expected =
+        Node(
+            ('n', 5, 1),
+            Node(
+                ('k', 3, 2),
+                Node(
+                    ('c', 2, 3),
+                    Node(('a', 1, 4), Empty, Empty),
+                    Node(('h', 3, 4), Node(('g', 2, 5), Node(('e', 1, 6), Empty, Empty), Empty), Empty)
+                ),
+                Node(('m', 4, 3), Empty, Empty)
+            ),
+            Node(
+                ('u', 7, 2),
+                Node(('p', 6, 3), Empty, Node(('s', 7, 4), Node(('q', 6, 5), Empty, Empty), Empty)),
+                Empty
+            )
+        )
+
+    assertEqualStr expected actual
+
+[<Fact>]
+let ``Problem 58`` () =
+    let str = "a(b(d,e),c(,f(g,)))"
+
+    let tree =
+        Node('a', Node('b', leaf 'd', leaf 'e'), Node('c', Empty, Node('f', leaf 'g', Empty)))
+
+    let actual = stringOfTree tree
+    let expected = str
+    Assert.Equal(expected, actual)
+
+    let actual = treeOfString str
+    let expected = tree
+
+    assertEqualStr expected actual
+
+[<Fact>]
+let ``Problem 59`` () =
+    let expected =
+        Node(
+            'n',
+            Node('k', Node('c', leaf 'a', Node('h', Node('g', leaf 'e', Empty), Empty)), leaf 'm'),
+            Node('u', Node('p', Empty, Node('s', leaf 'q', Empty)), Empty)
+        )
+
+    let preordered = preorder expected
+    let inordered = inorder expected
+    let actual = preInTree preordered inordered
+
+    assertEqualStr expected actual
+
+[<Fact>]
+let ``Problem 60`` () =
+    let str = "abd..e..c.fg..."
+
+    let tree =
+        Node('a', Node('b', leaf 'd', leaf 'e'), Node('c', Empty, Node('f', leaf 'g', Empty)))
+
+    let actual = dotstringOfTree tree
+    let expected = str
+    Assert.Equal(expected, actual)
+
+    let actual = treeOfDotstring str
+    let expected = tree
     assertEqualStr expected actual
