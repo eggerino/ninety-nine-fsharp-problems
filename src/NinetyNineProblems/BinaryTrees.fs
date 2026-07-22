@@ -96,8 +96,45 @@ module BinaryTrees =
 
         aux 0
 
+    let rec foldRange f init n0 n1 =
+        if n0 > n1 then
+            init
+        else
+            foldRange f (f init n0) (n0 + 1) n1
+
+    let addSwapLeftRight trees =
+        List.fold
+            (fun a n ->
+                match n with
+                | Node(v, t1, t2) -> Node(v, t2, t1) :: a
+                | Empty -> a)
+            trees
+            trees
+
+    let rec hbalTreeNodesHeight h n =
+        assert (minNodes h <= n && n <= maxNodes h)
+
+        if h = 0 then
+            [ Empty ]
+        else
+            let acc = addHbalTreeNode [] (h - 1) (h - 2) n in
+            let acc = addSwapLeftRight acc in
+            addHbalTreeNode acc (h - 1) (h - 1) n
+
+    and addHbalTreeNode l h1 h2 n =
+        let f l n1 =
+            let t1 = hbalTreeNodesHeight h1 n1 in
+            let t2 = hbalTreeNodesHeight h2 (n - 1 - n1) in
+            List.fold (fun l t1 -> List.fold (fun l t2 -> Node('x', t1, t2) :: l) l t2) l t1
+
+        let min_n1 = max (minNodes h1) (n - 1 - maxNodes h2) in
+        let max_n1 = min (maxNodes h1) (n - 1 - minNodes h2) in
+        foldRange f l min_n1 max_n1
+
     let hbalTreeNodes n =
-        raise (System.NotImplementedException())
+        let f l h = List.rev (hbalTreeNodesHeight h n) @ l
+
+        foldRange f [] (minHeight n) (maxHeight n)
 
     let rec countLeaves =
         function
@@ -166,7 +203,8 @@ module BinaryTrees =
         | Empty -> Empty
         | Node(x, l, r) -> Node(f x, map f l, map f r)
 
-    let move dx dy = map (fun (item, x, y) -> item, x+dx, y+dy)
+    let move dx dy =
+        map (fun (item, x, y) -> item, x + dx, y + dy)
 
     let addHeights tree =
         let rec aux h =
@@ -206,9 +244,9 @@ module BinaryTrees =
                 let dist = pown 2 (height - h - 1)
                 let l = buildCentered l |> move -dist 0
                 let r = buildCentered r |> move dist 0
-                
+
                 Node((item, 0, h), l, r)
- 
+
         let centered = buildCentered tree
 
         let rec getLeftX =
