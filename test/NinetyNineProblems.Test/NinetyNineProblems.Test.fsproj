@@ -10,6 +10,7 @@
     <Compile Include="Arithmetic.Test.fs" />
     <Compile Include="Logic.Test.fs" />
     <Compile Include="BinaryTrees.Test.fs" />
+    <Compile Include="MultiwayTrees.Test.fs" />
   </ItemGroup>
 
   <ItemGroup>
