@@ -11,6 +11,7 @@
     <Compile Include="Logic.fs" />
     <Compile Include="BinaryTrees.fs" />
     <Compile Include="MultiwayTrees.fs" />
+    <Compile Include="Graphs.fs" />
   </ItemGroup>
 
 </Project>
