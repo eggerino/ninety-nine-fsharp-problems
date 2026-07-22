@@ -132,6 +132,9 @@ module BinaryTrees =
         foldRange f l min_n1 max_n1
 
     let hbalTreeNodes n =
+        (*
+            The implementation is ported from the solution of the problem author
+        *)
         let f l h = List.rev (hbalTreeNodesHeight h n) @ l
 
         foldRange f [] (minHeight n) (maxHeight n)
