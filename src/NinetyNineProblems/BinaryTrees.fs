@@ -6,15 +6,15 @@ module BinaryTrees =
         | Empty
         | Node of 'a * 'a BinaryTree * 'a BinaryTree
 
-    let foldSquared (folder: 'state -> 'a -> 'b -> 'state) (state: 'state) (list1: 'a list) (list2: 'b list) =
+    let accTrees item left right acc = Node(item, left, right) :: acc
+
+    let foldBackSquared (folder: 'a -> 'b -> 'state -> 'state) (list1: 'a list) (list2: 'b list) (state: 'state) =
         let aux acc1 x1 =
-            List.fold (fun acc2 x2 -> folder acc2 x1 x2) acc1 list2
+            List.fold (fun acc2 x2 -> folder x1 x2 acc2) acc1 list2
 
         List.fold aux state list1
 
     let rec cbalTree n =
-        let aux acc l r = Node('x', l, r) :: acc
-
         if n = 0 then
             [ Empty ]
         elif n = 1 then
@@ -24,14 +24,16 @@ module BinaryTrees =
             // Both sides have same amount of nodes
             // One gets "consumed" by the current node itself
             let subtree = cbalTree ((n - 1) / 2)
-            foldSquared aux [] subtree subtree
+            foldBackSquared (accTrees 'x') subtree subtree []
 
         else
             // Sides have different amount of nodes
             let subtree1 = cbalTree (n / 2)
             let subtree2 = cbalTree (n / 2 - 1)
 
-            foldSquared aux (foldSquared aux [] subtree1 subtree2) subtree2 subtree1
+            []
+            |> foldBackSquared (accTrees 'x') subtree1 subtree2
+            |> foldBackSquared (accTrees 'x') subtree2 subtree1
 
     let rec isMirror x y =
         match x, y with
@@ -59,3 +61,160 @@ module BinaryTrees =
             | h :: t -> aux (insert h acc) t
 
         aux Empty list
+
+    let symCbalTrees n = cbalTree n |> List.filter isSymmetric
+
+    let rec hbalTree n =
+        if n = 0 then
+            [ Empty ]
+        elif n = 1 then
+            [ Node('x', Empty, Empty) ]
+
+        else
+            let subtrees1 = hbalTree (n - 1)
+            let subtrees2 = hbalTree (n - 2)
+
+            []
+            |> foldBackSquared (accTrees 'x') subtrees2 subtrees1
+            |> foldBackSquared (accTrees 'x') subtrees1 subtrees2
+            |> foldBackSquared (accTrees 'x') subtrees1 subtrees1
+
+    let maxNodes h = pown 2 h - 1
+
+    let rec minNodes h =
+        if h <= 0 then 0
+        elif h = 1 then 1
+        else 1 + minNodes (h - 1) + minNodes (h - 2)
+
+    let log2 x = log x / log 2.0
+
+    let minHeight n = n + 1 |> float |> log2 |> ceil |> int
+
+    let maxHeight n =
+        let rec aux h =
+            if minNodes h <= n then aux (h + 1) else h - 1
+
+        aux 0
+
+    let hbalTreeNodes n =
+        raise (System.NotImplementedException())
+
+    let rec countLeaves =
+        function
+        | Empty -> 0
+        | Node(_, Empty, Empty) -> 1
+        | Node(_, l, r) -> countLeaves l + countLeaves r
+
+    let rec leaves =
+        function
+        | Empty -> []
+        | Node(x, Empty, Empty) -> [ x ]
+        | Node(_, l, r) -> leaves l @ leaves r
+
+    let rec internals =
+        function
+        | Empty -> []
+        | Node(_, Empty, Empty) -> []
+        | Node(x, l, r) -> x :: internals l @ internals r
+
+    let atLevel tree n =
+        let rec nextLevel acc =
+            function
+            | [] -> acc
+            | Empty :: t -> nextLevel acc t
+            | Node(_, l, r) :: t -> nextLevel (l :: r :: acc) t
+
+        let rec findLevel k level =
+            if k = n then
+                level
+            else
+                findLevel (k + 1) (nextLevel [] level)
+
+        let rec extractItems =
+            function
+            | [] -> []
+            | Empty :: t -> extractItems t
+            | Node(x, _, _) :: t -> x :: extractItems t
+
+        findLevel 1 [ tree ] |> extractItems
+
+    let completeBinaryTree list =
+        let rec prepare cnt acc =
+            let nextCnt = cnt + 1
+
+            function
+            | [] -> acc
+            | h :: t -> prepare nextCnt ((h, nextCnt) :: acc) t
+
+        let list = prepare 0 [] list
+
+        let rec getAt n =
+            function
+            | [] -> None
+            | (item, addr) :: t when addr = n -> Some item
+            | _ :: t -> getAt n t
+
+        let rec buildTree addr =
+            match getAt addr list with
+            | None -> Empty
+            | Some x -> Node(x, buildTree (2 * addr), buildTree (2 * addr + 1))
+
+        buildTree 1
+
+    let rec map f =
+        function
+        | Empty -> Empty
+        | Node(x, l, r) -> Node(f x, map f l, map f r)
+
+    let move dx dy = map (fun (item, x, y) -> item, x+dx, y+dy)
+
+    let addHeights tree =
+        let rec aux h =
+            function
+            | Empty -> Empty
+            | Node(x, l, r) -> Node((x, h), aux (h + 1) l, aux (h + 1) r)
+
+        aux 1 tree
+
+    let rec getHeight =
+        function
+        | Empty -> 0
+        | Node(_, l, r) -> 1 + max (getHeight l) (getHeight r)
+
+    let layoutBinaryTree1 tree =
+        let tree = addHeights tree
+
+        let rec aux x =
+            function
+            | Empty -> x, Empty
+            | Node((item, h), l, r) ->
+                let x, l = aux x l
+                let item = item, x, h
+                let x, r = aux (x + 1) r
+                x, Node(item, l, r)
+
+        aux 1 tree |> snd
+
+    let layoutBinaryTree2 tree =
+        let height = getHeight tree
+        let tree = addHeights tree
+
+        let rec buildCentered =
+            function
+            | Empty -> Empty
+            | Node((item, h), l, r) ->
+                let dist = pown 2 (height - h - 1)
+                let l = buildCentered l |> move -dist 0
+                let r = buildCentered r |> move dist 0
+                
+                Node((item, 0, h), l, r)
+ 
+        let centered = buildCentered tree
+
+        let rec getLeftX =
+            function
+            | Empty -> 0
+            | Node((_, x, _), Empty, _) -> x
+            | Node(_, l, _) -> getLeftX l
+
+        move (1 - getLeftX centered) 0 centered
