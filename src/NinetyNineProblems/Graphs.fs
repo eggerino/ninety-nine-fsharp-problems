@@ -2,7 +2,9 @@ namespace NinetyNineProblems
 
 module Graphs =
 
-    type 'a GraphTerm when 'a: comparison = { nodes: 'a Set; edges: ('a * 'a) Set }
+    type ('a, 'b) Graph when 'a: comparison and 'b: comparison =
+        { nodes: 'a Set
+          edges: ('a * 'a * 'b) Set }
 
     let graphTermOfHuman (str: string) =
         let rec advance ptr =
@@ -25,7 +27,7 @@ module Graphs =
                     match prev with
                     | None -> edges
                     | Some p ->
-                        let edge = if p < node then p, node else node, p
+                        let edge = if p < node then p, node, () else node, p, ()
                         Set.add edge edges
 
                 let prev =
@@ -51,7 +53,7 @@ module Graphs =
 
     let neighbors g a =
         g.edges
-        |> filterMap (fun (x, y) ->
+        |> filterMap (fun (x, y, _) ->
             if x = a then Some y
             elif y = a then Some x
             else None)
@@ -77,3 +79,44 @@ module Graphs =
         |> Seq.concat
         |> Seq.map (fun x -> x @ [ a ])
         |> Seq.toList
+
+    let split vertex visited edges =
+        let isConsumed edge =
+            let src, dest, _ = edge
+            src = vertex && contains dest visited || dest = vertex && contains src visited
+
+        Set.partition isConsumed edges
+
+    let addEdge edge =
+        function
+        | [] -> [ [ edge ] ]
+        | edges -> edges |> List.map (fun edgeList -> edge :: edgeList) |> List.rev
+
+    let sTree graph =
+        let rec aux acc visited edges =
+            function
+            | [] -> acc
+            | vertex :: rest ->
+                let consumedEdges, remainingEdges = split vertex visited edges
+
+                if Set.isEmpty consumedEdges then
+                    []
+                else
+                    let acc = consumedEdges |> Set.fold (fun a p -> addEdge p acc @ a |> List.rev) []
+                    aux acc (vertex :: visited) remainingEdges rest
+
+        let vertices = Seq.toList graph.nodes
+
+        aux [] [ List.head vertices ] graph.edges (List.tail vertices)
+
+    let isTree graph = List.length (sTree graph) > 0
+
+    let isConnected graph = List.length (sTree graph) > 0
+
+    let totalWeight edges =
+        List.fold (fun acc (_, _, w) -> acc + w) 0 edges
+
+    let msTree graph =
+        match sTree graph with
+        | [] -> []
+        | trees -> List.maxBy totalWeight trees
