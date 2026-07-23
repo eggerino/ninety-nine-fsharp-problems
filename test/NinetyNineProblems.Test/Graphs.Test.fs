@@ -91,3 +91,55 @@ let ``Problem 70`` () =
     let actual = totalWeight (msTree graph)
     let expected = 30
     Assert.Equal(expected, actual)
+
+[<Fact>]
+let ``Problem 71`` () =
+    let graph1 =
+        { nodes = Set.ofList [ 1; 2; 3; 4; 5 ]
+          edges = Set.ofList [ (1, 2, 1); (2, 3, 2); (3, 4, 4); (1, 4, 5); (1, 5, 6); (4, 5, 7) ] }
+
+    let graph2 =
+        { nodes = Set.ofList [ 'a'; 'b'; 'c'; 'd'; 'e' ]
+          edges =
+            Set.ofList
+                [ ('b', 'c', 5)
+                  ('a', 'c', 3)
+                  ('a', 'b', 67)
+                  ('b', 'e', 4)
+                  ('d', 'e', 5)
+                  ('c', 'd', 7) ] }
+
+    let actual = isIsomorphic graph1 graph2
+    Assert.True actual
+
+    let graph3 =
+        { nodes = Set.ofList [ 1; 2; 3; 4; 5 ]
+          edges = Set.ofList [ (1, 2, 1); (2, 3, 2); (3, 4, 4); (1, 4, 5); (1, 5, 6); (4, 5, 7) ] }
+
+    let graph4 =
+        { nodes = Set.ofList [ 'a'; 'b'; 'c'; 'd'; 'e' ]
+          edges =
+            Set.ofList
+                [ ('b', 'c', 5)
+                  ('a', 'c', 3)
+                  ('a', 'b', 67)
+                  ('b', 'e', 4)
+                  ('d', 'e', 5)
+                  ('b', 'd', 7) ] }
+
+    let actual = isIsomorphic graph3 graph4
+    Assert.False actual
+
+[<Fact>]
+let ``Problem 72`` () =
+    let graph =
+        { nodes = Set.ofList [ 1; 2; 3; 4; 5 ]
+          edges = Set.ofList [ (1, 2, 1); (2, 3, 2); (3, 4, 4); (1, 4, 5); (1, 5, 6); (4, 5, 7) ] }
+
+    let actual = degree graph 1
+    let expected = 3
+    Assert.Equal(expected, actual)
+
+    let actual = sortedNodes graph
+    let expected = [ 1; 4; 2; 3; 5 ]
+    assertEqualStr expected actual
