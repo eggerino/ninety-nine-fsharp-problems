@@ -143,3 +143,97 @@ let ``Problem 72`` () =
     let actual = sortedNodes graph
     let expected = [ 1; 4; 2; 3; 5 ]
     assertEqualStr expected actual
+
+[<Fact>]
+let ``Problem 73`` () =
+    let graph =
+        M.ofAdjacency
+            [ 'u', [ 'v'; 'x' ]
+              'v', [ 'y' ]
+              'w', [ 'z'; 'y' ]
+              'x', [ 'v' ]
+              'y', [ 'x' ]
+              'z', [ 'z' ] ]
+
+    let actual = M.dfsFold graph 'u' (fun acc n -> n :: acc) []
+    let expected = [ 'z'; 'w'; 'y'; 'x'; 'v'; 'u' ]
+    assertEqualStr expected actual
+
+[<Fact>]
+let ``Problem 74`` () =
+    let graph =
+        M.ofAdjacency
+            [ 'u', [ 'v'; 'x' ]
+              'v', [ 'y' ]
+              'w', [ 'z' ]
+              'x', [ 'v' ]
+              'y', [ 'x' ]
+              'z', [ 'z' ] ]
+
+    let actual = List.length (splitConnected graph)
+    let expected = 2
+    Assert.Equal(expected, actual)
+
+[<Fact>]
+let ``Problem 75`` () =
+    let graph =
+        M.ofAdjacency
+            [ 'u', [ 'v'; 'x' ]
+              'v', [ 'y' ]
+              'w', [ 'z'; 'y' ]
+              'x', [ 'v' ]
+              'y', [ 'x' ]
+              'z', [ 'z' ] ]
+
+    let actual = isBipartite graph
+    Assert.False actual
+
+    let graph =
+        M.ofAdjacency
+            [ 'u', [ 'v'; 'x' ]
+              'v', [ 'y'; 'w' ]
+              'w', [ 'z'; 'x' ]
+              'x', [ 'y' ]
+              'y', [ 'z' ]
+              'z', [ 'u' ] ]
+
+    let actual = isBipartite graph
+    Assert.True actual
+
+[<Fact>]
+let ``Problem 76`` () =
+    let testCases =
+        [ 3, 2, 1
+          4, 2, 1
+          4, 3, 1
+          5, 2, 1
+          5, 3, 0
+          5, 4, 1
+          6, 2, 2
+          6, 3, 2
+          6, 4, 1
+          6, 5, 1
+
+          // Slow cases. All 5 took ~40s on my machine.
+          // 7, 2, 2
+          // 7, 3, 0
+          // 7, 4, 2
+          // 7, 5, 0
+          // 7, 6, 1
+
+          // Extremly slow cases. One didn't finish under 100s on my machine. Never acutally ran them
+          // 8, 2, 3
+          // 8, 3, 6
+          // 8, 4, 6
+          // 8, 5, 3
+          // 8, 6, 1
+          // 8, 7, 1
+          // 9, 2, 4
+          ]
+
+    let testSingle _ data =
+        let n, k, expected = data
+        let actual = List.length (regulars k n)
+        Assert.Equal(expected, actual)
+
+    Seq.fold testSingle () testCases

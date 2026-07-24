@@ -193,3 +193,160 @@ module Graphs =
         |> Seq.sortByDescending (fun (_, d) -> d)
         |> Seq.map fst
         |> Seq.toList
+
+    module M =
+        type 'a T when 'a: comparison = Map<'a, 'a list>
+
+        let ofAdjacency<'a when 'a: comparison> (x: ('a * 'a list) list) : 'a T =
+            let addEdge a b graph =
+                let addSingle src dest graph =
+                    Map.change src (Option.map (Set.add dest)) graph
+
+                graph |> addSingle a b |> addSingle b a
+
+            let withoutEdges = x |> Seq.map (fun (node, _) -> node, Set.empty) |> Map.ofSeq
+
+            let edges =
+                x
+                |> Seq.map (fun (node, links) -> Seq.map (fun link -> node, link) links)
+                |> Seq.concat
+
+            let setGraph =
+                edges |> Seq.fold (fun acc (src, dest) -> addEdge src dest acc) withoutEdges
+
+            let graph = setGraph |> Map.map (fun _ links -> Set.toList links)
+
+            graph
+
+        type ('a, 'b) State when 'a: comparison = { seen: 'a Set; acc: 'b }
+
+        let dfsFold graph node folder init =
+            let initialState = { seen = Set.empty; acc = init }
+
+            let visitNode state node =
+                let seen = Set.add node state.seen
+                let acc = folder state.acc node
+                { seen = seen; acc = acc }
+
+            let rec aux state node =
+                if Set.contains node state.seen then
+                    state
+                else
+                    let newState = visitNode state node
+                    let neighbors = Map.find node graph
+                    List.fold aux newState neighbors
+
+            (aux initialState node).acc
+
+    let splitConnected graph =
+        let setRemoveMany xs set =
+            Seq.fold (fun acc x -> Set.remove x acc) set xs
+
+        let listAccFolder acc x = x :: acc
+
+        let rec findConnectedNodes acc nodeSet =
+            if Set.isEmpty nodeSet then
+                acc
+
+            else
+                let node = Seq.head nodeSet
+                let subgraphNodes = M.dfsFold graph node listAccFolder []
+                let reducedNodeSet = setRemoveMany subgraphNodes nodeSet
+
+                findConnectedNodes (subgraphNodes :: acc) reducedNodeSet
+
+        let graphOfNodes nodes =
+            nodes |> Seq.map (fun node -> node, Map.find node graph) |> Map.ofSeq
+
+
+        let nodeSet = Set.ofSeq graph.Keys
+        let connectedNodes = findConnectedNodes [] nodeSet
+
+        List.map graphOfNodes connectedNodes
+
+    let isBipartite graph =
+        let checkNeighbors set1 set2 =
+            all (fun node -> all (fun nb -> Set.contains nb set2) (Map.find node graph)) set1
+
+        let checkConnected graph =
+            if Map.isEmpty graph then
+                true
+            else
+                let folder (set1, set2) node = set2, Set.add node set1
+
+                let node = Seq.head graph.Keys
+                let set1, set2 = M.dfsFold graph node folder (Set.empty, Set.empty)
+
+                checkNeighbors set1 set2 && checkNeighbors set2 set1
+
+        all checkConnected (splitConnected graph)
+
+    let regulars k n =
+        // Internal graph datastructure is Map<int, int list>
+        let addLinks node links graph =
+            let addSingle src dest graph =
+                Map.change src (Option.map (fun links -> dest :: links)) graph
+
+            let addEdge a b graph = addSingle a b (addSingle b a graph)
+
+            Seq.fold (fun acc link -> addEdge node link acc) graph links
+
+        let order graph node = Map.find node graph |> List.length
+
+        let checkOrder limit nodes graph =
+            nodes |> Seq.map (order graph) |> all (fun o -> o <= limit)
+
+        let rec generateGraphs acc =
+            function
+            | [] -> acc
+            | node :: others ->
+                let addAllNodeLinks g =
+                    let nodeOrder = order g node
+
+                    if nodeOrder = k then
+                        Seq.ofList [ g ] // Cannot add more links to the node. Only the current graph does not violate order limit of the current node
+
+                    else
+                        let numNewLinks = k - nodeOrder
+                        let allPossibleLinks = Lists.extract numNewLinks others
+                        Seq.map (fun links -> addLinks node links g) allPossibleLinks
+
+                let newAcc =
+                    acc |> Seq.map addAllNodeLinks |> Seq.concat |> Seq.filter (checkOrder k others)
+
+                generateGraphs newAcc others
+
+        let toGraph (g: Map<int, int list>) =
+            let nodes = Set.ofSeq g.Keys
+
+            let edges =
+                g.Keys
+                |> Seq.map (fun k -> Seq.map (fun v -> k, v, 'a') (Map.find k g))
+                |> Seq.concat
+                |> Set.ofSeq
+
+            { nodes = nodes; edges = edges }
+
+        let filterIsomorphics graphs =
+            let rec checkMany graph =
+                function
+                | [] -> true
+                | head :: _ when isIsomorphic graph head -> false
+                | _ :: tail -> checkMany graph tail
+
+            let rec aux acc =
+                function
+                | [] -> acc
+                | graph :: others when checkMany graph others -> aux (graph :: acc) others
+                | _ :: tail -> aux acc tail
+
+            aux [] graphs
+
+        let nodes = [ 1..n ]
+        let empty = Map.ofSeq (Seq.map (fun node -> node, []) nodes)
+
+        nodes
+        |> generateGraphs [ empty ]
+        |> Seq.map toGraph
+        |> Seq.toList
+        |> filterIsomorphics
