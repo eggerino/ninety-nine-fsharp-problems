@@ -12,6 +12,7 @@
     <Compile Include="BinaryTrees.fs" />
     <Compile Include="MultiwayTrees.fs" />
     <Compile Include="Graphs.fs" />
+    <Compile Include="Misc.fs" />
   </ItemGroup>
 
 </Project>

@@ -12,6 +12,7 @@
     <Compile Include="BinaryTrees.Test.fs" />
     <Compile Include="MultiwayTrees.Test.fs" />
     <Compile Include="Graphs.Test.fs" />
+    <Compile Include="Misc.Test.fs" />
   </ItemGroup>
 
   <ItemGroup>
