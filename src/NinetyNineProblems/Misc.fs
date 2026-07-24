@@ -30,3 +30,32 @@ module Misc =
                     generate newAcc (cnt + 1)
 
             generate [ [] ] 0 |> Seq.toList
+
+    module KnightsTour =
+
+        let moves pos =
+            let r, c = pos
+
+            [ r + 2, c + 1
+              r + 1, c + 2
+              r + 2, c - 1
+              r + 1, c - 2
+              r - 2, c - 1
+              r - 1, c - 2
+              r - 2, c + 1
+              r - 1, c + 2 ]
+
+        let isOnBoard n pos =
+            let r, c = pos
+            1 <= r && r <= n && 1 <= c && c <= n
+
+        let jump n pos =
+            let rec aux acc pos =
+                if Set.contains pos acc || not (isOnBoard n pos) then
+                    acc
+
+                else
+                    let newAcc = Set.add pos acc
+                    List.fold aux newAcc (moves pos)
+
+            aux Set.empty pos |> Set.toList

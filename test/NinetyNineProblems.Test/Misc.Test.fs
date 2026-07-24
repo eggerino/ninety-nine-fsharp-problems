@@ -17,5 +17,22 @@ let assertEqualInt (a: int) b = Assert.Equal(a, b)
 let ``Problem 77`` () =
     let actual = EightQueensProblem.queensPositions 4
     let expected = [ [ 3; 1; 4; 2 ]; [ 2; 4; 1; 3 ] ]
-
     assertEqualList (assertEqualList assertEqualInt) expected actual
+
+[<Fact>]
+let ``Problem 78`` () =
+    let actual = KnightsTour.jump 2 (1, 1) |> List.length
+    let expected = 1
+    assertEqualInt expected actual
+
+    let actual = KnightsTour.jump 3 (1, 1) |> List.length
+    let expected = 8
+    assertEqualInt expected actual
+
+    let actual = KnightsTour.jump 3 (2, 2) |> List.length
+    let expected = 1
+    assertEqualInt expected actual
+
+    let actual = KnightsTour.jump 8 (1, 1) |> List.length
+    let expected = 64
+    assertEqualInt expected actual
