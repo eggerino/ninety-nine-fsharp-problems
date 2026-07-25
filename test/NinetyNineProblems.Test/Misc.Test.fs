@@ -11,7 +11,19 @@ let rec assertEqualList asserter l1 l2 =
         assertEqualList asserter t1 t2
     | _, _ -> Assert.Fail "Different lengths"
 
+let assertEqualTuple fstAsserter sndAsserter (a1, a2) (b1, b2) =
+    fstAsserter a1 b1
+    sndAsserter a2 b2
+
+
+let assertEqualTuple3 fstAsserter sndAsserter trdAsserter (a1, a2, a3) (b1, b2, b3) =
+    fstAsserter a1 b1
+    sndAsserter a2 b2
+    trdAsserter a3 b3
+
 let assertEqualInt (a: int) b = Assert.Equal(a, b)
+
+let assertEqualChar (a: char) b = Assert.Equal(a, b)
 
 [<Fact>]
 let ``Problem 77`` () =
@@ -36,6 +48,20 @@ let ``Problem 78`` () =
     let actual = KnightsTour.jump 8 (1, 1) |> List.length
     let expected = 64
     assertEqualInt expected actual
+
+[<Fact>]
+let ``Problem 79`` () =
+    let tree =
+        [ 'a'; 'b'; 'c'; 'd'; 'e'; 'f'; 'g' ], [ 'd', 'a'; 'a', 'g'; 'a', 'b'; 'b', 'c'; 'b', 'e'; 'e', 'f' ]
+
+    let actualNodes, actualEdges = VonKochsConjecture.label tree
+    let expectedNodes = [ 'a', 1; 'b', 5; 'c', 2; 'd', 6; 'e', 3; 'f', 4; 'g', 7 ]
+
+    let expectedEdges =
+        [ 'd', 'a', 5; 'a', 'g', 6; 'a', 'b', 4; 'b', 'c', 3; 'b', 'e', 2; 'e', 'f', 1 ]
+
+    assertEqualList (assertEqualTuple assertEqualChar assertEqualInt) expectedNodes actualNodes
+    assertEqualList (assertEqualTuple3 assertEqualChar assertEqualChar assertEqualInt) expectedEdges actualEdges
 
 [<Fact>]
 let ``Problem 86`` () =

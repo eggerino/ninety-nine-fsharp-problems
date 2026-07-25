@@ -31,6 +31,55 @@ module Misc =
 
             generate [ [] ] 0 |> Seq.toList
 
+    module VonKochsConjecture =
+
+        let permutations list =
+            let rec ps list taken =
+                seq {
+                    if Set.count taken = List.length list then
+                        yield []
+                    else
+                        for l in list do
+                            if not (Set.contains l taken) then
+                                for perm in ps list (Set.add l taken) do
+                                    yield l :: perm
+                }
+
+            ps list Set.empty
+
+        let bind nodes labels =
+            let map = Seq.foldBack2 Map.add nodes labels Map.empty
+
+            fun node -> Map.find node map
+
+        let edgeLabel f (src, dest) = abs (f src - f dest)
+
+        let checkLabeling edges f =
+            let n = Seq.length edges + 1
+            let edgeLagels = edges |> Seq.map (edgeLabel f) |> Set.ofSeq
+            Graphs.all (fun label -> Set.contains label edgeLagels) [ 1 .. (n - 1) ]
+
+        let toLabeled tree f =
+            let nodes, edges = tree
+
+            let labeledNodes = List.map (fun node -> node, f node) nodes
+
+            let labeledEdges =
+                List.map (fun (src, dest) -> src, dest, edgeLabel f (src, dest)) edges
+
+            labeledNodes, labeledEdges
+
+        let label tree =
+            let nodes, edges = tree
+            let n = List.length nodes
+            let nodeLabels = [ 1..n ]
+
+            permutations nodeLabels
+            |> Seq.map (bind nodes)
+            |> Seq.filter (checkLabeling edges)
+            |> Seq.head
+            |> toLabeled tree
+
     module KnightsTour =
 
         let moves pos =
