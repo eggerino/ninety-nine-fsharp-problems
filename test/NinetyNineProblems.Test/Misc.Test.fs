@@ -66,6 +66,12 @@ let ``Problem 79`` () =
     assertEqualList (assertEqualTuple3 assertEqualChar assertEqualChar assertEqualInt) expectedEdges actualEdges
 
 [<Fact>]
+let ``Problem 80`` () =
+    let actual = AritmeticPuzzle.solve [ 2; 3; 5; 7; 11 ]
+    let expected = "2 = (((3) - 5) - 7) + 11"
+    assertEqualStr expected actual
+
+[<Fact>]
 let ``Problem 81`` () =
     let actual = EnglishNumberWords.fullWords 175
     let expected = "one-seven-five"

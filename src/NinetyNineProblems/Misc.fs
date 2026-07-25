@@ -31,6 +31,35 @@ module Misc =
 
             generate [ [] ] 0 |> Seq.toList
 
+    module KnightsTour =
+
+        let moves pos =
+            let r, c = pos
+
+            [ r + 2, c + 1
+              r + 1, c + 2
+              r + 2, c - 1
+              r + 1, c - 2
+              r - 2, c - 1
+              r - 1, c - 2
+              r - 2, c + 1
+              r - 1, c + 2 ]
+
+        let isOnBoard n pos =
+            let r, c = pos
+            1 <= r && r <= n && 1 <= c && c <= n
+
+        let jump n pos =
+            let rec aux acc pos =
+                if Set.contains pos acc || not (isOnBoard n pos) then
+                    acc
+
+                else
+                    let newAcc = Set.add pos acc
+                    List.fold aux newAcc (moves pos)
+
+            aux Set.empty pos |> Set.toList
+
     module VonKochsConjecture =
 
         let permutations list =
@@ -81,7 +110,48 @@ module Misc =
             |> toLabeled tree
 
     module AritmeticPuzzle =
-        () // Todo
+
+        let rec evalAll =
+            function
+            | [] -> raise (System.Exception "unreachable")
+            | [ n ] -> seq { n, n.ToString() }
+            | n :: tail ->
+                let aux (cur, str) =
+                    seq {
+                        cur + n, $"({str}) + {n}"
+                        cur - n, $"({str}) - {n}"
+                        cur * n, $"({str}) * {n}"
+                        cur / n, $"({str}) / {n}"
+                    }
+
+                evalAll tail |> Seq.map aux |> Seq.concat
+
+        let check (a, b) = fst a = fst b
+
+        let splitAtRev list i =
+            let l1, l2 = List.splitAt i list
+            List.rev l1, List.rev l2
+
+        let combinate (xs, ys) =
+            let yList = Seq.toList ys
+            Seq.map (fun x -> List.map (fun y -> x, y) yList) xs |> Seq.concat
+
+        let solve list =
+            let n = List.length list
+
+            if n < 2 then
+                raise (System.Exception "Not solvable with less than 2 elements")
+            else
+                let (_, left), (_, right) =
+                    seq { 1 .. (n - 1) }
+                    |> Seq.map (splitAtRev list)
+                    |> Seq.map (fun (l, r) -> evalAll l, evalAll r)
+                    |> Seq.map combinate
+                    |> Seq.concat
+                    |> Seq.filter check
+                    |> Seq.head
+
+                left + " = " + right
 
     module EnglishNumberWords =
 
@@ -118,35 +188,6 @@ module Misc =
 
         let fullWords number =
             number |> toDigits |> List.map wordOfDigit |> concatWith "-"
-
-    module KnightsTour =
-
-        let moves pos =
-            let r, c = pos
-
-            [ r + 2, c + 1
-              r + 1, c + 2
-              r + 2, c - 1
-              r + 1, c - 2
-              r - 2, c - 1
-              r - 1, c - 2
-              r - 2, c + 1
-              r - 1, c + 2 ]
-
-        let isOnBoard n pos =
-            let r, c = pos
-            1 <= r && r <= n && 1 <= c && c <= n
-
-        let jump n pos =
-            let rec aux acc pos =
-                if Set.contains pos acc || not (isOnBoard n pos) then
-                    acc
-
-                else
-                    let newAcc = Set.add pos acc
-                    List.fold aux newAcc (moves pos)
-
-            aux Set.empty pos |> Set.toList
 
     module NeverEndingSequence =
 
