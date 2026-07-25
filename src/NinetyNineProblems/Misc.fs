@@ -231,6 +231,95 @@ module Misc =
 
                 aux str
 
+    module Sudoku =
+
+        type Board = int array array
+
+        let parseCell =
+            function
+            | '.' -> 0
+            | x -> System.Int32.Parse(x.ToString())
+
+        let parse (str: string) =
+            let lines = str.Split System.Environment.NewLine
+            lines |> Array.map (fun line -> line |> Seq.map parseCell |> Seq.toArray)
+
+        let row r (board: Board) =
+            [ for c in 0..8 do
+                  yield board[r][c] ]
+
+        let col c (board: Board) =
+            [ for r in 0..8 do
+                  yield board[r][c] ]
+
+        let block n (board: Board) =
+            let x = n % 3
+            let y = n / 3
+
+            [ for dr in 0..2 do
+                  for dc in 0..2 do
+                      let r = 3 * x + dr
+                      let c = 3 * y + dc
+                      yield board[r][c] ]
+
+        let checkCells cells =
+            let rec aux acc =
+                function
+                | [] -> true
+                | head :: tail when head = 0 -> aux acc tail
+                | head :: _ when Set.contains head acc -> false
+                | head :: tail -> aux (Set.add head acc) tail
+
+            aux Set.empty cells
+
+        let all p s =
+            Seq.fold (fun acc x -> acc && p x) true s
+
+        let check f board =
+            all (fun i -> checkCells (f i board)) [ 0..8 ]
+
+        let checkRows = check row
+        let checkCols = check col
+        let checkBlocks = check block
+
+        let checkBoard board =
+            checkRows board && checkCols board && checkBlocks board
+
+        let rec solve (board: Board ref) =
+            let coords =
+                seq {
+                    for r in 0..8 do
+                        for c in 0..8 do
+                            if board.Value[r][c] = 0 then
+                                yield r, c
+                }
+                |> Seq.tryHead
+
+            match coords with
+            | None -> true
+            | Some(row, col) ->
+
+                let cand =
+                    seq {
+                        for candidate in 1..9 do
+                            board.Value[row][col] <- candidate
+
+                            if checkBoard board.Value then
+                                if solve board then
+                                    yield candidate
+
+                        board.Value[row][col] <- 0
+                    }
+                    |> Seq.tryHead
+
+                cand.IsSome
+
+    module Nanograms =
+        () // TODO
+
+    module CrosswordPuzzle =
+        () // TODO
+
     module NeverEndingSequence =
 
         type 'a Node = Node of 'a * 'a Stream

@@ -11,6 +11,11 @@ let rec assertEqualList asserter l1 l2 =
         assertEqualList asserter t1 t2
     | _, _ -> Assert.Fail "Different lengths"
 
+let rec assertEqualArray asserter l1 l2 =
+    Assert.Equal(Array.length l1, Array.length l2)
+    let _ = Seq.zip l1 l2 |> Seq.map (fun (x1, x2) -> asserter x1 x2) |> Seq.length
+    ()
+
 let assertEqualTuple fstAsserter sndAsserter (a1, a2) (b1, b2) =
     fstAsserter a1 b1
     sndAsserter a2 b2
@@ -89,6 +94,35 @@ let ``Problem 82`` () =
     Assert.False(SyntaxChecker.identifier "a--fasf87")
     Assert.False(SyntaxChecker.identifier "afasf87-")
     Assert.True(SyntaxChecker.identifier "this-is-a-long-identifier")
+
+[<Fact>]
+let ``Problem 83`` () =
+    let unsolved =
+        "..48...17\n"
+        + "67.9.....\n"
+        + "5.8.3...4\n"
+        + "3..74.1..\n"
+        + ".69...78.\n"
+        + "..1.69..5\n"
+        + "1...8.3.6\n"
+        + ".....6.91\n"
+        + "24...15.."
+
+    let solved =
+        "934825617\n"
+        + "672914853\n"
+        + "518637924\n"
+        + "325748169\n"
+        + "469153782\n"
+        + "781269435\n"
+        + "197582346\n"
+        + "853476291\n"
+        + "246391578"
+
+    let actual = Sudoku.parse unsolved
+    Assert.True(Sudoku.solve (ref actual))
+    let expected = Sudoku.parse solved
+    assertEqualArray (assertEqualArray assertEqualInt) expected actual
 
 [<Fact>]
 let ``Problem 86`` () =
