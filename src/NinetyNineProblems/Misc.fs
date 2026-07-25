@@ -7,6 +7,15 @@ module Misc =
         let all p s =
             Seq.fold (fun acc x -> acc && p x) true s
 
+        let rec optionPermutations =
+            function
+            | [] -> Seq.ofList [ [] ]
+            | [ head ] -> Seq.map (fun x -> [ x ]) head
+            | head :: tail ->
+                optionPermutations tail
+                |> Seq.map (fun perm -> Seq.map (fun x -> x :: perm) head)
+                |> Seq.concat
+
     module EightQueensProblem =
 
         let occupiedByRow = Set.ofSeq
@@ -398,7 +407,126 @@ module Misc =
             board |> Array.map renderRow |> String.concat "\n"
 
     module CrosswordPuzzle =
-        () // TODO
+
+        open System
+
+        type Input = string
+
+        type Error =
+            | MalformedInput
+            | NoSolution
+
+        type Result = Result<string, Error>
+
+        type WordSet = string Set
+
+        type Unsolved = string
+
+        type Solved = string
+
+        type Position = int * int
+
+        type Direction =
+            | Horizontal
+            | Vertical
+
+        type Length = int
+
+        type WordLocator = Position * Direction * Length
+
+        let readPuzzle (str: Input) : (WordSet * Unsolved) option =
+            let sections = str.Split "\n\n" in
+
+            match sections with
+            | [| words; unsolved |] -> let ws = words.Split Environment.NewLine |> Set.ofArray in Some(ws, unsolved)
+            | _ -> None
+
+        let findWords (str: Unsolved) : WordLocator list =
+            let rows = str.Split Environment.NewLine in
+
+            let cols =
+                [| for c in 0 .. (rows[0].Length - 1) do
+                       yield Array.fold (fun acc (r: string) -> acc + r[c].ToString()) "" rows |] in
+
+            let find (str: string) =
+                str.Split " "
+                |> Seq.filter (fun x -> x.Length > 1)
+                |> Seq.map (fun word -> str.IndexOf word, word.Length) in
+
+            let horizontals =
+                rows
+                |> Seq.zip (Seq.initInfinite id)
+                |> Seq.map (fun (r, row) -> Seq.map (fun (c, l) -> r, c, l) (find row))
+                |> Seq.concat
+                |> Seq.map (fun (r, c, l) -> (r, c), Horizontal, l)
+                |> Seq.toList in
+
+            let verticals =
+                cols
+                |> Seq.zip (Seq.initInfinite id)
+                |> Seq.map (fun (c, row) -> Seq.map (fun (r, l) -> r, c, l) (find row))
+                |> Seq.concat
+                |> Seq.map (fun (r, c, l) -> (r, c), Vertical, l)
+                |> Seq.toList in
+
+            horizontals @ verticals
+
+        let getPossibleWords (ws: WordSet) ((_, _, l): WordLocator) : string list =
+            Set.filter (fun w -> String.length w = l) ws |> Seq.toList
+
+        let permutations (def: (WordLocator * string list) list) : (WordLocator * string) list seq =
+            let guessPairOptions = List.map (fun (wl, ws) -> List.map (fun w -> wl, w) ws) def in
+            Util.optionPermutations guessPairOptions
+
+        let tryRenderSolution (u: Unsolved) (solution: (WordLocator * string) list) : Solved option =
+            let mutable grid =
+                u.Split Environment.NewLine |> Array.map (fun row -> row.ToCharArray()) in
+
+            let rec tryRenderWord (((r, c), dir, l), (word: string)) =
+                if l = 0 then
+                    true
+                else
+                    let char = word[word.Length - l] in
+
+                    let nextPos =
+                        match dir with
+                        | Horizontal -> r, c + 1
+                        | Vertical -> r + 1, c in
+
+                    if grid[r][c] = '.' || grid[r][c] = char then
+                        grid[r][c] <- char
+                        tryRenderWord ((nextPos, dir, l - 1), word)
+                    else
+                        false in
+
+            if Util.all tryRenderWord solution then
+                grid
+                |> Seq.map (fun r -> Seq.fold (fun acc c -> acc + c.ToString()) "" r)
+                |> String.concat "\n"
+                |> Some
+            else
+                None
+
+        let isSolution (u: Unsolved) (solution: (WordLocator * string) list) : bool =
+            Option.isSome (tryRenderSolution u solution)
+
+        let solve (str: Input) : Result =
+            match readPuzzle str with
+            | None -> Error MalformedInput
+            | Some(words, unsolved) ->
+                let wordLocators = findWords unsolved
+
+                let possibleSolutions =
+                    wordLocators
+                    |> List.map (fun wl -> wl, getPossibleWords words wl)
+                    |> permutations
+
+                let firstSolution =
+                    possibleSolutions |> Seq.filter (isSolution unsolved) |> Seq.tryHead
+
+                match firstSolution with
+                | None -> Error NoSolution
+                | Some(solution) -> tryRenderSolution unsolved solution |> Option.get |> Ok
 
     module NeverEndingSequence =
 

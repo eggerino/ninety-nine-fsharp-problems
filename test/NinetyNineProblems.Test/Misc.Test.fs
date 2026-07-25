@@ -136,6 +136,42 @@ let ``Problem 84`` () =
     assertEqualStr expected (Option.get actual)
 
 [<Fact>]
+let ``Problem 85`` () =
+    let puzzle =
+        "prolog\n"
+        + "perl\n"
+        + "online\n"
+        + "gnu\n"
+        + "linux\n"
+        + "web\n"
+        + "nfs\n"
+        + "xml\n"
+        + "sql\n"
+        + "mac\n"
+        + "emacs\n"
+        + "\n"
+        + "pr.log  e\n"
+        + ". .  .  m\n"
+        + "r l.nu. a\n"
+        + "l i f ma.\n"
+        + "  n .ql s\n"
+        + " w.b     "
+
+    let expected =
+        "prolog  e\n"
+        + "e n  n  m\n"
+        + "r linux a\n"
+        + "l i f mac\n"
+        + "  n sql s\n"
+        + " web     "
+
+    let actual = CrosswordPuzzle.solve puzzle
+
+    match actual with
+    | Error(err) -> Assert.Fail $"Failed with {err}"
+    | Ok(actual) -> assertEqualStr expected actual
+
+[<Fact>]
 let ``Problem 86`` () =
     let stream = NeverEndingSequence.ints 5
 
