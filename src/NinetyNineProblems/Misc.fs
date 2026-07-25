@@ -189,6 +189,48 @@ module Misc =
         let fullWords number =
             number |> toDigits |> List.map wordOfDigit |> concatWith "-"
 
+    module SyntaxChecker =
+
+        let letterParser =
+            function
+            | head :: tail when System.Char.IsLetter head -> Some tail
+            | _ -> None
+
+        let digitParser =
+            function
+            | head :: tail when System.Char.IsDigit head -> Some tail
+            | _ -> None
+
+        let charParser c =
+            function
+            | head :: tail when head = c -> Some tail
+            | _ -> None
+
+        let minusParser = charParser '-'
+
+        let identifier str =
+            let str = Seq.toList str
+
+            match letterParser str with
+            | None -> false
+            | Some(str) ->
+
+                let rec aux =
+                    function
+                    | [] -> true
+                    | str ->
+                        let str =
+                            match minusParser str with
+                            | None -> str
+                            | Some(x) -> x
+
+                        match letterParser str, digitParser str with
+                        | None, None -> false
+                        | Some(x), _ -> aux x
+                        | _, Some(x) -> aux x
+
+                aux str
+
     module NeverEndingSequence =
 
         type 'a Node = Node of 'a * 'a Stream

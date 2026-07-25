@@ -78,6 +78,19 @@ let ``Problem 81`` () =
     assertEqualStr expected actual
 
 [<Fact>]
+let ``Problem 82`` () =
+    Assert.True(SyntaxChecker.identifier "a")
+    Assert.False(SyntaxChecker.identifier "1")
+    Assert.False(SyntaxChecker.identifier "-")
+    Assert.True(SyntaxChecker.identifier "abcded")
+    Assert.True(SyntaxChecker.identifier "a123")
+    Assert.True(SyntaxChecker.identifier "aasdf213adas")
+    Assert.True(SyntaxChecker.identifier "a-adsf2fa-fd-87")
+    Assert.False(SyntaxChecker.identifier "a--fasf87")
+    Assert.False(SyntaxChecker.identifier "afasf87-")
+    Assert.True(SyntaxChecker.identifier "this-is-a-long-identifier")
+
+[<Fact>]
 let ``Problem 86`` () =
     let stream = NeverEndingSequence.ints 5
 
