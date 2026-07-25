@@ -271,3 +271,23 @@ module Misc =
             let (Node(h, t)) = s ()
             f h
             iter f t
+
+    module DiagnonalOfSequenceOfSequences =
+
+        let enumerate s = Seq.zip s (Seq.initInfinite id)
+
+        let tryTail s =
+            if Seq.isEmpty s then Seq.empty else Seq.tail s
+
+        let rec skip count s =
+            if count = 0 then s else skip (count - 1) (tryTail s)
+
+        let tryAt idx s = s |> skip idx |> Seq.tryHead
+
+        let tryGetMatch (s, idx) =
+            match tryAt idx s with
+            | Some(x, i) when i = idx -> [ x ]
+            | _ -> []
+
+        let diag s =
+            s |> Seq.map enumerate |> enumerate |> Seq.map tryGetMatch |> Seq.concat

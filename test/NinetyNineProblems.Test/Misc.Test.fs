@@ -127,3 +127,32 @@ let ``Problem 86`` () =
     let actual = NeverEndingSequence.take 3 stream
     let expected = [ 6; 8; 10 ]
     assertEqualList assertEqualInt expected actual
+
+[<Fact>]
+let ``Problem 87`` () =
+    let actual = DiagnonalOfSequenceOfSequences.diag [ [ 1 ] ] |> Seq.toList
+    let expected = [ 1 ]
+    assertEqualList assertEqualInt expected actual
+
+    let actual =
+        DiagnonalOfSequenceOfSequences.diag [ [ 1; 2; 3 ]; [ 4; 5; 6 ]; [ 7; 8; 9 ] ]
+        |> Seq.toList
+
+    let expected = [ 1; 5; 9 ]
+    assertEqualList assertEqualInt expected actual
+
+
+    let actual =
+        DiagnonalOfSequenceOfSequences.diag [ [ 1; 2; 3 ]; []; [ 7; 8; 9 ] ]
+        |> Seq.toList
+
+    let expected = [ 1; 9 ]
+    assertEqualList assertEqualInt expected actual
+
+
+    let actual =
+        DiagnonalOfSequenceOfSequences.diag [ [ 1; 2; 3 ]; [ 4; 5; 6 ]; [ 7; 8; 9 ]; [ 10 ] ]
+        |> Seq.toList
+
+    let expected = [ 1; 5; 9 ]
+    assertEqualList assertEqualInt expected actual
