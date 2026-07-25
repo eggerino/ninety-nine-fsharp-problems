@@ -80,6 +80,45 @@ module Misc =
             |> Seq.head
             |> toLabeled tree
 
+    module AritmeticPuzzle =
+        () // Todo
+
+    module EnglishNumberWords =
+
+        let wordOfDigit =
+            function
+            | 0 -> "zero"
+            | 1 -> "one"
+            | 2 -> "two"
+            | 3 -> "three"
+            | 4 -> "four"
+            | 5 -> "five"
+            | 6 -> "six"
+            | 7 -> "seven"
+            | 8 -> "eight"
+            | 9 -> "nine"
+            | _ -> ""
+
+        let rec toDigits n =
+            if n = 0 then
+                []
+            else
+                let d = n % 10
+                let n = n / 10
+                toDigits n @ [ d ]
+
+        let concatWith delimiter strs =
+            let rec aux acc =
+                function
+                | [] -> acc
+                | [ str ] -> acc + str
+                | str :: tail -> aux (acc + str + delimiter) tail
+
+            aux "" strs
+
+        let fullWords number =
+            number |> toDigits |> List.map wordOfDigit |> concatWith "-"
+
     module KnightsTour =
 
         let moves pos =

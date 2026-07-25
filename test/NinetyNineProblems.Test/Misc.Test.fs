@@ -25,6 +25,8 @@ let assertEqualInt (a: int) b = Assert.Equal(a, b)
 
 let assertEqualChar (a: char) b = Assert.Equal(a, b)
 
+let assertEqualStr (a: string) b = Assert.Equal(a, b)
+
 [<Fact>]
 let ``Problem 77`` () =
     let actual = EightQueensProblem.queensPositions 4
@@ -62,6 +64,12 @@ let ``Problem 79`` () =
 
     assertEqualList (assertEqualTuple assertEqualChar assertEqualInt) expectedNodes actualNodes
     assertEqualList (assertEqualTuple3 assertEqualChar assertEqualChar assertEqualInt) expectedEdges actualEdges
+
+[<Fact>]
+let ``Problem 81`` () =
+    let actual = EnglishNumberWords.fullWords 175
+    let expected = "one-seven-five"
+    assertEqualStr expected actual
 
 [<Fact>]
 let ``Problem 86`` () =
