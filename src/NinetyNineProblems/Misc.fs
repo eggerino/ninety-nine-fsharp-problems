@@ -59,3 +59,44 @@ module Misc =
                     List.fold aux newAcc (moves pos)
 
             aux Set.empty pos |> Set.toList
+
+    module NeverEndingSequence =
+
+        type 'a Node = Node of 'a * 'a Stream
+        and 'a Stream = unit -> 'a Node
+
+        let hd (s: 'a Stream) =
+            let (Node(head, _)) = s ()
+            head
+
+        let tl (s: 'a Stream) =
+            let (Node(_, tail)) = s ()
+            tail
+
+        let rec take n (s: 'a Stream) =
+            if n = 0 then
+                []
+            else
+                let (Node(h, t)) = s ()
+                h :: take (n - 1) t
+
+        let rec unfold generator state () =
+            let value, x = generator state
+            Node(value, unfold generator x)
+
+        let rec bang x () = Node(x, bang x)
+
+        let rec ints i () = Node(i, ints (i + 1))
+
+        let rec map f (s: 'a Stream) () =
+            let (Node(h, t)) = s ()
+            Node(f h, map f t)
+
+        let rec filter f (s: 'a Stream) () =
+            let (Node(h, t)) = s ()
+            if f h then Node(h, filter f t) else filter f t ()
+
+        let rec iter f (s: 'a Stream) =
+            let (Node(h, t)) = s ()
+            f h
+            iter f t
