@@ -125,6 +125,17 @@ let ``Problem 83`` () =
     assertEqualArray (assertEqualArray assertEqualInt) expected actual
 
 [<Fact>]
+let ``Problem 84`` () =
+    let rows = [ [ 3 ]; [ 1 ]; [ 1; 1 ]; [ 1 ] ]
+    let cols = [ [ 1 ]; [ 1; 1 ]; [ 1; 1 ]; [ 2 ] ]
+
+    let actual = Nanograms.solve rows cols |> Option.map Nanograms.render
+    let expected = " xxx\n" + "   x\n" + "x x \n" + " x  "
+
+    Assert.True actual.IsSome
+    assertEqualStr expected (Option.get actual)
+
+[<Fact>]
 let ``Problem 86`` () =
     let stream = NeverEndingSequence.ints 5
 

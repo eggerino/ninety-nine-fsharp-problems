@@ -2,6 +2,11 @@ namespace NinetyNineProblems
 
 module Misc =
 
+    module Util =
+
+        let all p s =
+            Seq.fold (fun acc x -> acc && p x) true s
+
     module EightQueensProblem =
 
         let occupiedByRow = Set.ofSeq
@@ -272,11 +277,8 @@ module Misc =
 
             aux Set.empty cells
 
-        let all p s =
-            Seq.fold (fun acc x -> acc && p x) true s
-
         let check f board =
-            all (fun i -> checkCells (f i board)) [ 0..8 ]
+            Util.all (fun i -> checkCells (f i board)) [ 0..8 ]
 
         let checkRows = check row
         let checkCols = check col
@@ -315,7 +317,85 @@ module Misc =
                 cand.IsSome
 
     module Nanograms =
-        () // TODO
+
+        type Board = bool array array
+
+        let createEmptyBoard nRows nCols =
+            Seq.map (fun _ -> Seq.map (fun _ -> false) [ 1..nCols ] |> Seq.toArray) [ 1..nRows ]
+            |> Seq.toArray
+
+        let row r (board: Board) = Array.toList board[r]
+
+        let col c (board: Board) =
+            [ for r in 0 .. (board.Length - 1) do
+                  yield board[r][c] ]
+
+        let countLengths cells =
+            let rec aux acc counter =
+                function
+                | [] ->
+                    let final = if counter > 0 then counter :: acc else acc
+                    List.rev final
+                | head :: tail ->
+                    let nextCounter = if head then counter + 1 else 0
+                    let nextAcc = if not head && counter > 0 then counter :: acc else acc
+
+                    aux nextAcc nextCounter tail
+
+            aux [] 0 cells
+
+        let enumerate s = Seq.zip s (Seq.initInfinite id)
+
+        let rec listEquals l1 l2 =
+            match l1, l2 with
+            | [], [] -> true
+            | h1 :: t1, h2 :: t2 when h1 = h2 -> listEquals t1 t2
+            | _ -> false
+
+        let check (f: int -> Board -> bool list) (board: Board) (def: (int list * int) list) =
+            Util.all (fun (ls, i) -> f i board |> countLengths |> listEquals ls) def
+
+        let checkRows = check row
+        let checkCols = check col
+
+        let checkBoard board rows cols =
+            checkRows board rows && checkCols board cols
+
+        let solve rows cols =
+            let nRows = List.length rows
+            let nCols = List.length cols
+            let cellCount = nRows * nCols
+
+            let mutable board = createEmptyBoard nRows nCols
+            let rows = enumerate rows |> Seq.toList
+            let cols = enumerate cols |> Seq.toList
+
+            let rec aux idx =
+                if idx = cellCount then
+                    checkBoard board rows cols
+                else
+                    let r = idx % nRows
+                    let c = idx / nRows
+                    let nextIdx = idx + 1
+
+                    board[r][c] <- false
+
+                    if aux nextIdx then
+                        true
+                    else
+                        board[r][c] <- true
+                        if aux nextIdx then true else false
+
+            if aux 0 then Some board else None
+
+
+        let render board =
+            let renderCell x = if x then "x" else " "
+
+            let renderRow row =
+                row |> Array.map renderCell |> String.concat ""
+
+            board |> Array.map renderRow |> String.concat "\n"
 
     module CrosswordPuzzle =
         () // TODO
