@@ -1,5 +1,7 @@
 namespace NinetyNineProblems
 
+// Problems 40 - 43
+
 module Logic =
 
     type BoolExpr =
@@ -81,11 +83,11 @@ module Logic =
 
         match buildTree sorted with
         | None -> []
-        | Some(Leaf x) -> [ x, "0" ]
+        | Some(Leaf x) -> [ (x, "0") ]
         | Some(Node _ as n) ->
             let rec aux code =
                 function
-                | Leaf x -> [ x, code ]
+                | Leaf x -> [ (x, code) ]
                 | Node(left, right) -> aux (code + "1") left @ aux (code + "0") right
 
             aux "" n

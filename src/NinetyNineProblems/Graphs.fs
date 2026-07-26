@@ -1,6 +1,17 @@
 namespace NinetyNineProblems
 
+// Problems 66 - 76
+
 module Graphs =
+
+    module Util =
+        let rec extract k list =
+            if k <= 0 then
+                [ [] ]
+            else
+                match list with
+                | [] -> []
+                | x :: rest -> (extract (k - 1) rest |> List.map (fun r -> x :: r)) @ extract k rest
 
     type ('a, 'b) Graph when 'a: comparison and 'b: comparison =
         { nodes: 'a Set
@@ -308,7 +319,7 @@ module Graphs =
 
                     else
                         let numNewLinks = k - nodeOrder
-                        let allPossibleLinks = Lists.extract numNewLinks others
+                        let allPossibleLinks = Util.extract numNewLinks others
                         Seq.map (fun links -> addLinks node links g) allPossibleLinks
 
                 let newAcc =

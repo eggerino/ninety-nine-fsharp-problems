@@ -1,5 +1,7 @@
 namespace NinetyNineProblems
 
+//Problems 77 - 87
+
 module Misc =
 
     module Util =
@@ -100,7 +102,7 @@ module Misc =
         let checkLabeling edges f =
             let n = Seq.length edges + 1
             let edgeLagels = edges |> Seq.map (edgeLabel f) |> Set.ofSeq
-            Graphs.all (fun label -> Set.contains label edgeLagels) [ 1 .. (n - 1) ]
+            Util.all (fun label -> Set.contains label edgeLagels) [ 1 .. (n - 1) ]
 
         let toLabeled tree f =
             let nodes, edges = tree

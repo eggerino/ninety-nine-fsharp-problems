@@ -1,5 +1,7 @@
 namespace NinetyNineProblems
 
+// Problems 29 - 39
+
 module Arithmetic =
 
     let isPrime n =
@@ -43,7 +45,7 @@ module Arithmetic =
                 aux (d + 1) n
             else
                 match aux 2 (n / d) with
-                | [] -> [ d, 1 ]
+                | [] -> [ (d, 1) ]
                 | (x, c) :: t when x = d -> (x, c + 1) :: t
                 | l -> (d, 1) :: l
 
