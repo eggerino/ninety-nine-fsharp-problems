@@ -2,7 +2,7 @@
 
 > F# solutions to the [99 OCaml problemes](https://ocaml.org/exercises)
 
-The site got updated and at the point of solving *only* 87 problems.
+The site got updated and at the point of solving had *only* 87 problems.
 
 ## Usage
 
