@@ -15,7 +15,7 @@ module BinaryTreesTests =
             equal e a
             binaryTreeEqual equal el al
             binaryTreeEqual equal er ar
-        | _ -> Assert.Fail "Different shapes"
+        | _ -> fail "Different shapes"
 
     [<Fact>]
     let ``Problem 44`` () =

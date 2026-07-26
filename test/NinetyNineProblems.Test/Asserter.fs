@@ -6,6 +6,8 @@ module Asserter =
 
     type 'a Equal = 'a -> 'a -> unit
 
+    let fail message = Assert.Fail message
+
     let isTrue actual = Assert.True actual
 
     let isFalse actual = Assert.False actual

@@ -12,7 +12,7 @@ module ListTests =
         | encodeDef.Many(ei, e), encodeDef.Many(ai, a) ->
             intEqual ei ai
             equal e a
-        | _ -> Assert.Fail "Different shapes"
+        | _ -> fail "Different shapes"
 
     [<Fact>]
     let ``Problem 1`` () =

@@ -58,16 +58,16 @@ module MiscTests =
 
     [<Fact>]
     let ``Problem 82`` () =
-        Assert.True(SyntaxChecker.identifier "a")
-        Assert.False(SyntaxChecker.identifier "1")
-        Assert.False(SyntaxChecker.identifier "-")
-        Assert.True(SyntaxChecker.identifier "abcded")
-        Assert.True(SyntaxChecker.identifier "a123")
-        Assert.True(SyntaxChecker.identifier "aasdf213adas")
-        Assert.True(SyntaxChecker.identifier "a-adsf2fa-fd-87")
-        Assert.False(SyntaxChecker.identifier "a--fasf87")
-        Assert.False(SyntaxChecker.identifier "afasf87-")
-        Assert.True(SyntaxChecker.identifier "this-is-a-long-identifier")
+        isTrue (SyntaxChecker.identifier "a")
+        isFalse (SyntaxChecker.identifier "1")
+        isFalse (SyntaxChecker.identifier "-")
+        isTrue (SyntaxChecker.identifier "abcded")
+        isTrue (SyntaxChecker.identifier "a123")
+        isTrue (SyntaxChecker.identifier "aasdf213adas")
+        isTrue (SyntaxChecker.identifier "a-adsf2fa-fd-87")
+        isFalse (SyntaxChecker.identifier "a--fasf87")
+        isFalse (SyntaxChecker.identifier "afasf87-")
+        isTrue (SyntaxChecker.identifier "this-is-a-long-identifier")
 
     [<Fact>]
     let ``Problem 83`` () =
@@ -94,7 +94,7 @@ module MiscTests =
             + "246391578"
 
         let actual = Sudoku.parse unsolved
-        Assert.True(Sudoku.solve (ref actual))
+        isTrue (Sudoku.solve (ref actual))
         let expected = Sudoku.parse solved
         arrayEqual (arrayEqual intEqual) expected actual
 
@@ -106,7 +106,7 @@ module MiscTests =
         let actual = Nanograms.solve rows cols |> Option.map Nanograms.render
         let expected = " xxx\n" + "   x\n" + "x x \n" + " x  "
 
-        Assert.True actual.IsSome
+        isTrue actual.IsSome
         strEqual expected (Option.get actual)
 
     [<Fact>]
@@ -142,7 +142,7 @@ module MiscTests =
         let actual = CrosswordPuzzle.solve puzzle
 
         match actual with
-        | Error(err) -> Assert.Fail $"Failed with {err}"
+        | Error(err) -> fail $"Failed with {err}"
         | Ok(actual) -> strEqual expected actual
 
     [<Fact>]
