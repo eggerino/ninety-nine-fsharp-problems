@@ -2,9 +2,11 @@
 
 > F# solutions to the [99 OCaml problemes](https://ocaml.org/exercises)
 
-# Usage
+The site got updated and at the point of solving *only* 87 problems.
 
-Run all solutions
+## Usage
+
+Every problem has a unit test to ensure the code works like in the problem statements. Run all of these tests with
 
 ```sh
 dotnet test
